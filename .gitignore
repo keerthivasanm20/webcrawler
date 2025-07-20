@@ -3,3 +3,10 @@ _pycache__/
 db.sqlite3
 variables.py
 crawler/__pycache__/
+/webcrawler/__pycache__
+/webcrawler/crawler
+*.zip
+webcrawler/typing_extensions.py
+webcrawler/webcrawler/__init__.py
+webcrawler/webcrawler/__pycache__/__init__.cpython-312.pyc
+/webcrawler/webcrawler/__pycache__
