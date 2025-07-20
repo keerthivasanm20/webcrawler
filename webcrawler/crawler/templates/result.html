@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7f7f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: white;
+            border-bottom: 1px solid #e5e5e7;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #202123;
+        }
+
+        .new-chat-btn {
+            background: #10a37f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .new-chat-btn:hover {
+            background: #0d8f6f;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 768px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 16px;
+        }
+
+        .message-container {
+            flex: 1;
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .avatar.user {
+            background: #10a37f;
+        }
+
+        .avatar.assistant {
+            background: #6366f1;
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: calc(100% - 48px);
+        }
+
+        .message.user .message-content {
+            background: #f0f0f0;
+            padding: 12px 16px;
+            border-radius: 18px 18px 4px 18px;
+            margin-left: 48px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e5e5e7;
+            border-radius: 18px 18px 18px 4px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .response-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .response-header::before {
+            content: "🤖";
+            font-size: 16px;
+        }
+
+        .response-text {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #2d3748;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn.primary {
+            background: #10a37f;
+            color: white;
+            border-color: #10a37f;
+        }
+
+        .btn.primary:hover {
+            background: #0d8f6f;
+        }
+
+        .copy-btn::before {
+            content: "📋";
+        }
+
+        .retry-btn::before {
+            content: "🔄";
+        }
+
+        .footer {
+            padding: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e5e7;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 0 12px;
+            }
+            
+            .message {
+                gap: 12px;
+            }
+            
+            .response-text {
+                padding: 12px;
+                font-size: 13px;
+            }
+        }
+
+        .loading-dots {
+            display: inline-block;
+            animation: loadingDots 1.4s infinite ease-in-out;
+        }
+
+        @keyframes loadingDots {
+            0%, 80%, 100% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="chat-header">
+        <h1 class="chat-title">AI Agent Chat</h1>
+        <a href="/" class="new-chat-btn">New Chat</a>
+    </header>
+
+    <main class="chat-container">
+        <div class="message-container">
+            <div class="message assistant fade-in">
+                <div class="avatar assistant">AI</div>
+                <div class="message-content">
+                    <div class="response-header">Agent Response</div>
+                    <div class="response-text" id="responseText">{{ response }}</div>
+                    <div class="action-buttons">
+                        <button class="btn copy-btn" onclick="copyResponse()">Copy</button>
+                        <button class="btn retry-btn" onclick="regenerateResponse()">Regenerate</button>
+                        <a href="/" class="btn primary">Try Another</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function copyResponse() {
+            const responseText = document.getElementById('responseText').textContent;
+            navigator.clipboard.writeText(responseText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied';
+                btn.style.background = '#10a37f';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#10a37f';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            }).catch(() => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function regenerateResponse() {
+            const responseDiv = document.getElementById('responseText');
+            const originalText = responseDiv.textContent;
+            
+            // Show loading animation
+            responseDiv.innerHTML = 'Regenerating response<span class="loading-dots">...</span>';
+            
+            // Simulate regeneration (replace with actual logic)
+            setTimeout(() => {
+                responseDiv.textContent = originalText;
+                responseDiv.parentElement.classList.add('fade-in');
+                
+                setTimeout(() => {
+                    responseDiv.parentElement.classList.remove('fade-in');
+                }, 300);
+            }, 1500);
+        }
+
+        // Add smooth scrolling and focus management
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.message-container').scrollTop = document.querySelector('.message-container').scrollHeight;
+        });
+    </script>
+</body>
+</html>
